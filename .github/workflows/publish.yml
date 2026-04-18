@@ -1,0 +1,38 @@
+name: Build and Publish Custom sql.js
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Build
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Deploy to dist branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output
+          publish_branch: dist
+          force_push: true
+
+      - name: Tag the dist branch
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          git fetch origin dist
+          git checkout dist
+          git tag -f "$TAG_NAME"
+          git push origin "$TAG_NAME" --force

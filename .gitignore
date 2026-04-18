@@ -1,0 +1,3 @@
+output/
+.sqljs-build-tmp/
+.DS_Store
